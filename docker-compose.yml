@@ -7,6 +7,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      GEOCODER_PROVIDER: ${GEOCODER_PROVIDER:-nominatim}
+      WEATHER_PROVIDER: ${WEATHER_PROVIDER:-open-meteo}
+      MET_NORWAY_USER_AGENT: ${MET_NORWAY_USER_AGENT:-TP2-MeteoApi/1.0 contact@example.com}
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/docs.json').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 30s

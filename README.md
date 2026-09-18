@@ -21,6 +21,17 @@ L'API est alors disponible sur `http://localhost:3000` et peut être arrêtée a
 docker compose down
 ```
 
+Les fournisseurs sont configurables sans recompilation :
+
+```bash
+GEOCODER_PROVIDER=ban \
+WEATHER_PROVIDER=met-norway \
+MET_NORWAY_USER_AGENT='TP2-MeteoApi/1.0 prenom.nom@ecole.fr' \
+docker compose up --build
+```
+
+Les valeurs disponibles sont `nominatim` ou `ban` pour le géocodage, et `open-meteo` ou `met-norway` pour la météo.
+
 Puis appeler :
 
 ```bash
@@ -38,6 +49,7 @@ La réponse contient l'adresse retenue par Nominatim, les coordonnées, le fusea
 - `src/adapters/inbound/http` contient l'adaptateur HTTP Express et Swagger.
 - `src/adapters/outbound` contient les adaptateurs Nominatim et Open-Meteo.
 - `src/composition/container.ts` configure le conteneur IoC Awilix.
+- `src/composition/config.ts` choisit les fournisseurs depuis les variables d'environnement, sans recompilation.
 - `src/main.ts` est le point d'entrée : il résout l'application depuis le conteneur.
 
 Les adaptateurs acceptent une URL de base et une fonction `fetch` injectées, ce qui permet de les tester sans réseau réel. Awilix gère l'assemblage et la durée de vie des dépendances ; remplacer un adaptateur se fait dans `src/composition/container.ts`.
