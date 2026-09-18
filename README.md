@@ -38,6 +38,15 @@ Puis appeler :
 curl 'http://localhost:3000/weather?address=Paris'
 ```
 
+Pour utiliser les fournisseurs du TP2, configurez un User-Agent avec un contact réel :
+
+```bash
+export GEOCODER_PROVIDER=ban
+export WEATHER_PROVIDER=met-norway
+export MET_NORWAY_USER_AGENT='TP2-MeteoApi/1.0 votre.email@ecole.fr'
+docker compose up -d --force-recreate
+```
+
 La documentation interactive Swagger est disponible sur [http://localhost:3000/docs](http://localhost:3000/docs), et le document OpenAPI brut sur `http://localhost:3000/docs.json`.
 
 La réponse contient l'adresse retenue par Nominatim, les coordonnées, le fuseau horaire et les données horaires `shortwave_radiation` fournies par Open-Meteo.

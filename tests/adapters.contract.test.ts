@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { BanGeocoder } from '../src/adapters/outbound/ban/ban-geocoder';
 import { NominatimGeocoder } from '../src/adapters/outbound/nominatim/nominatim-geocoder';
 import { MetNorwayProvider } from '../src/adapters/outbound/met-norway/met-norway-provider';
@@ -37,4 +37,19 @@ describe.each([
   ['Open-Meteo', (fetchFn: typeof fetch) => new OpenMeteoProvider('https://open-meteo.test', fetchFn), openMeteoResponse],
 ])('%s weather provider contract', (_name, factory, response) => {
   weatherProviderContract(factory, response);
+});
+
+describe('MET Norway adapter requirements', () => {
+  it('sends an identifiable User-Agent', async () => {
+    let requestInit: RequestInit | undefined;
+    const userAgent = 'TP2-MeteoApi/1.0 contact@example.com';
+    const provider = new MetNorwayProvider('TP2-MeteoApi/1.0 contact@example.com', 'https://met.test', async (_input, init) => {
+      requestInit = init;
+      return new Response(JSON.stringify(metNorwayResponse), { status: 200 });
+    });
+
+    await provider.forecast({ latitude: 44.12, longitude: 4.08 });
+
+    expect(new Headers(requestInit?.headers).get('User-Agent')).toBe(userAgent);
+  });
 });
