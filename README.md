@@ -120,3 +120,15 @@ sg docker -c 'docker compose build --no-cache'
 ```
 
 L'API renvoie `400` si `address` est absent, `404` si le lieu n'est pas trouvé et `502` si un service externe échoue.
+
+## TP4 - Audit des licences
+
+Les dépendances directes et transitives sont auditées avec `license-checker`. Le scan brut est disponible dans [licenses.json](licenses.json) et le rapport de classification dans [licenses.md](licenses.md).
+
+La vérification automatisée est exécutée par [`.github/workflows/license-audit.yml`](.github/workflows/license-audit.yml). Elle échoue si une licence est absente de la whitelist ou si une licence GPL, AGPL, LGPL ou inconnue apparaît. `MPL-2.0` est explicitement documentée comme exception revue pour les paquets transitifs `lightningcss` de l'outillage.
+
+Pour relancer le contrôle localement sans installer de dépendance dans le projet :
+
+```bash
+node scripts/check-licenses.js licenses.json
+```
