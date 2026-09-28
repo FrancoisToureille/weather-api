@@ -8,8 +8,7 @@ export function weatherProviderContract(createProvider: (fetchFn: typeof fetch) 
     await expect(provider.forecast({ latitude: 44.12, longitude: 4.08 })).resolves.toMatchObject({
       latitude: 44.12,
       longitude: 4.08,
-      timezone: expect.any(String),
-      hourly: expect.any(Object),
+      hourly: [{ time: expect.any(String), temperatureCelsius: expect.any(Number) }],
     });
   });
 

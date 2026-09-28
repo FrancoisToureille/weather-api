@@ -12,8 +12,7 @@ describe('GetWeatherByAddress', () => {
       forecast: async () => ({
         latitude: 48.85,
         longitude: 2.35,
-        timezone: 'Europe/Paris',
-        hourly: { shortwave_radiation: [100] },
+        hourly: [{ time: '2025-06-10T14:00:00Z', temperatureCelsius: 24.3 }],
       }),
     };
 
@@ -22,8 +21,7 @@ describe('GetWeatherByAddress', () => {
         address: 'Paris, France',
         latitude: 48.85,
         longitude: 2.35,
-        timezone: 'Europe/Paris',
-        hourly: { shortwave_radiation: [100] },
+        hourly: [{ time: '2025-06-10T14:00:00Z', temperatureCelsius: 24.3 }],
       });
   });
 

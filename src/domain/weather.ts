@@ -10,8 +10,12 @@ export interface GeocodedLocation extends Coordinates {
 export interface WeatherForecast {
   latitude: number;
   longitude: number;
-  timezone: string;
-  hourly: Record<string, unknown>;
+  hourly: HourlyForecast[];
+}
+
+export interface HourlyForecast {
+  time: string;
+  temperatureCelsius: number;
 }
 
 export interface Geocoder {

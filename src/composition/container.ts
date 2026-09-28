@@ -1,5 +1,7 @@
 import { asClass, asFunction, createContainer, InjectionMode } from 'awilix';
 import { GetWeatherByAddress } from '../application/get-weather';
+import { DemoWeather } from '../application/demo-weather';
+import { CachedGeocoder } from '../application/cached-geocoder';
 import { BanGeocoder } from '../adapters/outbound/ban/ban-geocoder';
 import { NominatimGeocoder } from '../adapters/outbound/nominatim/nominatim-geocoder';
 import { MetNorwayProvider } from '../adapters/outbound/met-norway/met-norway-provider';
@@ -12,11 +14,13 @@ export function createApplicationContainer(env: NodeJS.ProcessEnv = process.env)
   const config = getConfig(env);
 
   container.register({
-    geocoder: asFunction(() => config.geocoder === 'ban' ? new BanGeocoder() : new NominatimGeocoder()).singleton(),
+    sourceGeocoder: asFunction(() => config.geocoder === 'ban' ? new BanGeocoder() : new NominatimGeocoder()).singleton(),
+    geocoder: asClass(CachedGeocoder).singleton(),
     weatherProvider: asFunction(() => config.weather === 'met-norway'
       ? new MetNorwayProvider(config.metNorwayUserAgent)
       : new OpenMeteoProvider()).singleton(),
     getWeatherByAddress: asClass(GetWeatherByAddress).singleton(),
+    demoWeather: asClass(DemoWeather).singleton(),
     app: asFunction(createApp).singleton(),
   });
 

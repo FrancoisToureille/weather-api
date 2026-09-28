@@ -1,6 +1,6 @@
 # Weather API
 
-API TypeScript/Express qui transforme une adresse en prévisions météo horaires.
+API TypeScript/Express qui transforme une adresse en prévisions météo horaires, avec mode démo, cache de géocodage et format de sortie unifié.
 
 ## Lancer avec Docker
 
@@ -44,12 +44,29 @@ sg docker -c 'docker compose up --build'
 Puis appeler :
 
 ```bash
-curl 'http://localhost:3000/weather?address=Paris'
+curl 'http://localhost:3000/forecast?address=Paris'
+```
+
+Le mode démo ne contacte aucun service externe :
+
+```bash
+curl 'http://localhost:3000/forecast?address=Alès&demo=true'
 ```
 
 La documentation interactive Swagger est disponible sur [http://localhost:3000/docs](http://localhost:3000/docs), et le document OpenAPI brut sur `http://localhost:3000/docs.json`.
 
-La réponse contient l'adresse normalisée, les coordonnées, le fuseau horaire et les prévisions horaires fournies par le fournisseur météo sélectionné.
+La réponse possède toujours la même structure, quel que soit le fournisseur ou le mode :
+
+```json
+{
+	"address": "Alès",
+	"latitude": 44.1279,
+	"longitude": 4.0817,
+	"hourly": [
+		{ "time": "2025-06-10T14:00:00Z", "temperatureCelsius": 24.3 }
+	]
+}
+```
 
 ## Architecture
 
@@ -60,6 +77,9 @@ La réponse contient l'adresse normalisée, les coordonnées, le fuseau horaire 
 - `src/composition/container.ts` configure le conteneur IoC Awilix.
 - `src/composition/config.ts` choisit les fournisseurs depuis les variables d'environnement, sans recompilation.
 - `src/main.ts` est le point d'entrée : il résout l'application depuis le conteneur.
+- `src/application/cached-geocoder.ts` ajoute un cache d'instance autour du port de géocodage.
+- `src/application/demo-weather.ts` fournit les données simulées du mode démo.
+- `src/adapters/inbound/http/weather-response-adapter.ts` adapte toutes les prévisions vers le format HTTP unifié.
 
 Le flux dépend uniquement des ports :
 
@@ -72,7 +92,9 @@ HTTP -> cas d'usage -> Geocoder / WeatherProvider
 
 Les adaptateurs acceptent une URL de base et une fonction `fetch` injectées, ce qui permet de les tester avec des bouchons HTTP sans réseau réel. Les DTO propres à BAN, Nominatim, MET Norway et Open-Meteo restent confinés à leurs adaptateurs. Awilix gère l'assemblage et la durée de vie des dépendances.
 
-Ajouter un fournisseur consiste à implémenter un port, ajouter l'adaptateur dans `src/adapters/outbound` et l'enregistrer dans `src/composition/container.ts`. Le domaine et le cas d'usage ne changent pas.
+Ajouter un fournisseur consiste à implémenter un port, ajouter l'adaptateur dans `src/adapters/outbound` et l'enregistrer dans `src/composition/container.ts`. Le domaine et le cas d'usage ne changent pas. Le cache est une décoration injectable du géocodeur et pourra être remplacé par Redis ou une autre solution sans modifier le cas d'usage.
+
+Le cache est conservé par l'instance de `CachedGeocoder` : deux requêtes successives pour une même adresse normalisée ne déclenchent qu'un seul appel réseau vers le géocodeur. Les erreurs ne sont pas mises en cache.
 
 ## Tests et compilation
 
@@ -85,9 +107,11 @@ RUN npm test && npm run build
 La suite comprend :
 
 - tests unitaires du cas d'usage ;
-- tests end-to-end HTTP de `GET /weather` et de Swagger ;
+- tests end-to-end HTTP de `GET /forecast` et de Swagger ;
+- test d'intégration end-to-end avec BAN et MET Norway simulés par bouchons HTTP ;
 - tests de contrat communs pour BAN/Nominatim et MET Norway/Open-Meteo ;
 - tests des réponses vides, adresses accentuées, erreurs HTTP et du `User-Agent` MET Norway.
+- tests du cache et du mode démo, dont l'absence d'appel aux services externes.
 
 Pour exécuter les vérifications dans Docker :
 

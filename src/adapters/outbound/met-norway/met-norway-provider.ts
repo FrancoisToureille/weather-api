@@ -40,17 +40,11 @@ export class MetNorwayProvider implements WeatherProvider {
     }
 
     const { properties } = metNorwayResponseSchema.parse(await response.json());
-    const hourly = properties.timeseries.reduce<Record<string, unknown>>((forecast, point) => {
-      const details = point.data.instant.details;
-      forecast.time = [...((forecast.time as string[] | undefined) ?? []), point.time];
-      for (const [key, value] of Object.entries(details)) {
-        const normalizedKey = key === 'air_temperature' ? 'temperature_2m' : key;
-        const values = (forecast[normalizedKey] as unknown[] | undefined) ?? [];
-        forecast[normalizedKey] = [...values, value];
-      }
-      return forecast;
-    }, {});
+    const hourly = properties.timeseries.map((point) => ({
+      time: point.time,
+      temperatureCelsius: Number(point.data.instant.details.air_temperature),
+    }));
 
-    return { latitude, longitude, timezone: 'UTC', hourly };
+    return { latitude, longitude, hourly };
   }
 }

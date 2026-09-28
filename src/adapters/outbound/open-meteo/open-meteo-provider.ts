@@ -1,12 +1,14 @@
 import { z } from 'zod';
-import { Coordinates, WeatherForecast } from '../../../domain/weather';
+import { Coordinates, HourlyForecast, WeatherForecast } from '../../../domain/weather';
 import { WeatherProvider } from '../../../domain/ports/weather-provider';
 
 const forecastSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
-  timezone: z.string(),
-  hourly: z.record(z.string(), z.unknown()),
+  hourly: z.object({
+    time: z.array(z.string()),
+    temperature_2m: z.array(z.number()),
+  }),
 });
 
 export class OpenMeteoProvider implements WeatherProvider {
@@ -19,7 +21,7 @@ export class OpenMeteoProvider implements WeatherProvider {
     const url = new URL('/v1/forecast', this.baseUrl);
     url.searchParams.set('latitude', String(latitude));
     url.searchParams.set('longitude', String(longitude));
-    url.searchParams.set('hourly', 'shortwave_radiation');
+    url.searchParams.set('hourly', 'temperature_2m');
 
     const response = await this.fetchFn(url);
 
@@ -27,6 +29,12 @@ export class OpenMeteoProvider implements WeatherProvider {
       throw new Error(`Open-Meteo request failed with status ${response.status}`);
     }
 
-    return forecastSchema.parse(await response.json());
+    const forecast = forecastSchema.parse(await response.json());
+    const hourly: HourlyForecast[] = forecast.hourly.time.map((time, index) => ({
+      time,
+      temperatureCelsius: forecast.hourly.temperature_2m[index],
+    }));
+
+    return { latitude, longitude, hourly };
   }
 }

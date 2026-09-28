@@ -13,8 +13,7 @@ const nominatimResponse = [{ lat: '44.12', lon: '4.08', display_name: 'Alès, Fr
 const openMeteoResponse = {
   latitude: 44.12,
   longitude: 4.08,
-  timezone: 'GMT',
-  hourly: { time: ['2026-09-18T12:00'], shortwave_radiation: [700] },
+  hourly: { time: ['2026-09-18T12:00'], temperature_2m: [24.3] },
 };
 const metNorwayResponse = {
   properties: {
